@@ -16,6 +16,7 @@
     "typescript": "^5.9.3"
   },
   "dependencies": {
-    "@matt.kantor/silk": "latest"
+    "@matt.kantor/silk": "latest",
+    "mime": "^4.1.0"
   }
 }

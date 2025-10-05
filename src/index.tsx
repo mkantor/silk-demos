@@ -1,6 +1,8 @@
 import { HTMLSerializingTransformStream } from '@matt.kantor/silk'
-import fs from 'node:fs/promises'
+import mime from 'mime/lite'
+import nodeFS from 'node:fs/promises'
 import { createServer } from 'node:http'
+import nodePath from 'node:path'
 import { Writable } from 'node:stream'
 
 const port = 80
@@ -57,7 +59,7 @@ const server = createServer((request, response) => {
         }
       }
     })
-    .catch((_pageError) => {
+    .catch(async (_pageError) => {
       if (url.pathname.endsWith('.page.js')) {
         response.statusCode = 404
         response.setHeader('Content-Type', 'text/plain')
@@ -66,22 +68,32 @@ const server = createServer((request, response) => {
         response.end()
       } else {
         // Try to serve as a static file.
-        return fs
-          .open(`${import.meta.dirname}/content${url.pathname}`)
-          .then((staticFile) =>
-            staticFile
-              .readableWebStream()
-              .pipeTo(Writable.toWeb(response))
-              .catch(console.error)
-              .then((_) => staticFile.close()),
-          )
-          .catch((error) => {
-            response.statusCode = 404
-            response.setHeader('Content-Type', 'text/plain')
-            response.write('Not found')
-            console.error(error)
-            response.end()
-          })
+        let path = `${import.meta.dirname}/content${url.pathname}`
+        try {
+          // Resolve symlinks. Mime types are based on the resolved path.
+          path = await nodeFS.readlink(path)
+          if (!nodePath.isAbsolute(path)) {
+            path = `${import.meta.dirname}/content/${path}`
+          }
+        } catch {}
+        let mimeType = mime.getType(path)
+        if (mimeType) {
+          response.setHeader('Content-Type', mimeType)
+        }
+        try {
+          const staticFile = await nodeFS.open(path)
+          return staticFile
+            .readableWebStream()
+            .pipeTo(Writable.toWeb(response))
+            .catch(console.error)
+            .then((_) => staticFile.close())
+        } catch (error) {
+          response.statusCode = 404
+          response.setHeader('Content-Type', 'text/plain')
+          response.write('Not found')
+          console.error(error)
+          response.end()
+        }
       }
     })
 })
