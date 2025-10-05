@@ -5,8 +5,8 @@
     "jsx": "react",
     "jsxFactory": "createElement",
     "jsxFragmentFactory": "createElement",
-    "lib": ["esnext"],
-    "module": "nodenext",
+    "lib": ["es2023"],
+    "module": "node20",
     "noPropertyAccessFromIndexSignature": true,
     "noUncheckedIndexedAccess": true,
     "noUncheckedSideEffectImports": true,
@@ -14,7 +14,7 @@
     "rootDir": "src",
     "skipLibCheck": true,
     "strict": true,
-    "target": "esnext",
+    "target": "es2023",
     "verbatimModuleSyntax": true
   }
 }
