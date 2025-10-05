@@ -59,6 +59,7 @@ const server = createServer((request, response) => {
     })
     .catch((_pageError) => {
       if (url.pathname.endsWith('.page.js')) {
+        response.statusCode = 404
         response.setHeader('Content-Type', 'text/plain')
         response.write('Not found')
         console.error(`Request path '${url.pathname}' ends in '.page.js'`)
@@ -75,6 +76,7 @@ const server = createServer((request, response) => {
               .then((_) => staticFile.close()),
           )
           .catch((error) => {
+            response.statusCode = 404
             response.setHeader('Content-Type', 'text/plain')
             response.write('Not found')
             console.error(error)
