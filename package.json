@@ -7,7 +7,8 @@
     "build": "tsc --build tsconfig.main.json",
     "build:tests": "tsc --project tsconfig.main.json --outDir dist-test --declarationDir dist && tsc --build tsconfig.test.json",
     "clean": "rm -rf dist* *.tsbuildinfo",
-    "start": "npm run clean && npm run build && node .",
+    "copy-non-typescript-files": "./copy-non-typescript-files",
+    "start": "npm run clean && npm run build && npm run copy-non-typescript-files && node .",
     "test": "npm run build:tests && cd dist-test && node --test"
   },
   "devDependencies": {

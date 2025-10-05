@@ -1,4 +1,5 @@
 import { HTMLSerializingTransformStream } from '@matt.kantor/silk'
+import fs from 'node:fs/promises'
 import { createServer } from 'node:http'
 import { Writable } from 'node:stream'
 
@@ -56,11 +57,30 @@ const server = createServer((request, response) => {
         }
       }
     })
-    .catch((error) => {
-      response.setHeader('Content-Type', 'text/plain')
-      response.write('Page not found')
-      console.error(error)
-      response.end()
+    .catch((_pageError) => {
+      if (url.pathname.endsWith('.page.js')) {
+        response.setHeader('Content-Type', 'text/plain')
+        response.write('Not found')
+        console.error(`Request path '${url.pathname}' ends in '.page.js'`)
+        response.end()
+      } else {
+        // Try to serve as a static file.
+        return fs
+          .open(`${import.meta.dirname}/content${url.pathname}`)
+          .then((staticFile) =>
+            staticFile
+              .readableWebStream()
+              .pipeTo(Writable.toWeb(response))
+              .catch(console.error)
+              .then((_) => staticFile.close()),
+          )
+          .catch((error) => {
+            response.setHeader('Content-Type', 'text/plain')
+            response.write('Not found')
+            console.error(error)
+            response.end()
+          })
+      }
     })
 })
 
