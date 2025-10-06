@@ -45,7 +45,7 @@ export const server = createServer((incomingMessage, response) => {
           )
         } else {
           // Assume it's a `ReadableStream<HTMLToken>`.
-          response.setHeader('Content-Type', 'text/html; charset=utf-8')
+          response.setHeader('content-type', 'text/html; charset=utf-8')
           return page
             .pipeThrough(
               new HTMLSerializingTransformStream({
@@ -60,7 +60,7 @@ export const server = createServer((incomingMessage, response) => {
     .catch(async (_pageError) => {
       if (url.pathname.endsWith('.page.js')) {
         response.statusCode = 404
-        response.setHeader('Content-Type', 'text/plain')
+        response.setHeader('content-type', 'text/plain')
         response.write('Not found')
         console.error(`Request path '${url.pathname}' ends in '.page.js'`)
         response.end()
@@ -76,7 +76,7 @@ export const server = createServer((incomingMessage, response) => {
         } catch {}
         let mimeType = mime.getType(path)
         if (mimeType) {
-          response.setHeader('Content-Type', mimeType)
+          response.setHeader('content-type', mimeType)
         }
         try {
           const staticFile = await nodeFS.open(path)
@@ -87,7 +87,7 @@ export const server = createServer((incomingMessage, response) => {
             .then((_) => staticFile.close())
         } catch (error) {
           response.statusCode = 404
-          response.setHeader('Content-Type', 'text/plain')
+          response.setHeader('content-type', 'text/plain')
           response.write('Not found')
           console.error(error)
           response.end()
