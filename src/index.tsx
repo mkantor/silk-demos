@@ -1,17 +1,16 @@
 import { HTMLSerializingTransformStream } from '@matt.kantor/silk'
 import mime from 'mime/lite'
 import nodeFS from 'node:fs/promises'
-import { createServer } from 'node:http'
+import { createServer, type IncomingMessage } from 'node:http'
 import nodePath from 'node:path'
-import { Writable } from 'node:stream'
+import { Readable, Writable } from 'node:stream'
 
 const port = 80
 
-const server = createServer((request, response) => {
-  // The URL constructor normalizes paths such that `url.pathname` will always
-  // be absolute and not contain any `..`s.
-  const url = new URL(
-    `http://${process.env['HOST'] ?? 'localhost'}${request.url}`,
+const server = createServer((incomingMessage, response) => {
+  const { request, url } = incomingMessageToWebRequest(
+    incomingMessage,
+    `http://${process.env['HOST'] ?? 'localhost'}`,
   )
 
   const pageModulePath = `./content${url.pathname}.page.js`
@@ -19,7 +18,8 @@ const server = createServer((request, response) => {
     .then((module: unknown) => {
       if (
         !(
-          // This validation is unfortunately somewhat limited.
+          // This validation is unfortunately somewhat limited. We assume the
+          // function accepts a single `Request`-typed parameter.
           (
             typeof module === 'object' &&
             module !== null &&
@@ -32,7 +32,7 @@ const server = createServer((request, response) => {
           `${pageModulePath} does not have a default export which is a function`,
         )
       } else {
-        const page: unknown = module.default()
+        const page: unknown = module.default(request)
         if (!(page instanceof ReadableStream)) {
           throw new Error(
             `Page was ${
@@ -97,6 +97,43 @@ const server = createServer((request, response) => {
       }
     })
 })
+
+/**
+ * Expects an `incomingMessage` obtained from a `Server` (it must have its
+ * `.url` set).
+ */
+const incomingMessageToWebRequest = (
+  incomingMessage: IncomingMessage,
+  baseUrl: string,
+): { readonly request: Request; readonly url: URL } => {
+  const url = new URL(incomingMessage.url ?? '/', baseUrl)
+
+  const headers = new Headers()
+  for (const key in incomingMessage.headers) {
+    const value = incomingMessage.headers[key]
+    if (value !== undefined) {
+      if (Array.isArray(value)) {
+        value.forEach((element) => headers.append(key, element))
+      } else {
+        headers.append(key, value)
+      }
+    }
+  }
+
+  const body =
+    incomingMessage.method !== 'GET' && incomingMessage.method !== 'HEAD'
+      ? Readable.toWeb(incomingMessage)
+      : null
+
+  const request = new Request(url.toString(), {
+    method: incomingMessage.method ?? '', // This fallback is expected to fail.
+    headers,
+    body,
+    duplex: 'half',
+  })
+
+  return { request, url }
+}
 
 server.listen(port)
 console.log(`Server is listening on port ${port}…`)
