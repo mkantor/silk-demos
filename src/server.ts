@@ -5,9 +5,7 @@ import { createServer, type IncomingMessage } from 'node:http'
 import nodePath from 'node:path'
 import { Readable, Writable } from 'node:stream'
 
-const port = 80
-
-const server = createServer((incomingMessage, response) => {
+export const server = createServer((incomingMessage, response) => {
   const { request, url } = incomingMessageToWebRequest(
     incomingMessage,
     `http://${process.env['HOST'] ?? 'localhost'}`,
@@ -134,6 +132,3 @@ const incomingMessageToWebRequest = (
 
   return { request, url }
 }
-
-server.listen(port)
-console.log(`Server is listening on port ${port}…`)
