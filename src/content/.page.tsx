@@ -19,6 +19,8 @@ export default (request: Request) => {
         }
       }) ?? defaultFeedURLs
 
+  const seenLinks = new Set<string>()
+
   return (
     <html lang="en">
       <head>
@@ -39,7 +41,18 @@ export default (request: Request) => {
           <input type="submit" value="Refresh Feeds" />
         </form>
         <div>
-          <ul>{getNewsFeeds(new Set(feedURLsAsArray))}</ul>
+          <ul>
+            {getNewsFeeds(new Set(feedURLsAsArray), (item) => {
+              if (!item.link) {
+                return false
+              } else {
+                // Only show each unique `<link>` once.
+                const seen = seenLinks.has(item.link)
+                seenLinks.add(item.link)
+                return !seen
+              }
+            })}
+          </ul>
         </div>
       </body>
     </html>
@@ -71,10 +84,13 @@ const defaultFeedURLs = [
 
 const getNewsFeeds = async (
   urls: ReadonlySet<URL>,
+  itemFilter: (item: NewsFeedItem) => boolean,
 ): Promise<ReadableHTMLTokenStream> => {
   const feeds = new Set<ReadableHTMLTokenStream>()
   for (const url of urls.values()) {
-    feeds.add(readableStreamFromPromise<HTMLToken>(getNewsFeed(url)))
+    feeds.add(
+      readableStreamFromPromise<HTMLToken>(getNewsFeed(url, itemFilter)),
+    )
   }
   return mergeStreams(feeds)
 }
@@ -91,10 +107,79 @@ type TagWithExtractableData = 'title' | 'link' | 'comments' | 'pubDate'
 const isTagWithExtractableData = (tag: string) =>
   tag == 'title' || tag == 'link' || tag == 'comments' || tag == 'pubDate'
 
-const getNewsFeed = async (url: URL): Promise<ReadableHTMLTokenStream> => {
-  const saxParser = sax.parser(/* strict */ true, { trim: true })
+const getNewsFeed = async (
+  url: URL,
+  itemFilter: (item: NewsFeedItem) => boolean,
+): Promise<ReadableHTMLTokenStream> => {
+  const response = await fetch(url)
+  const feed: ReadableHTMLTokenStream | undefined = response.body
+    ?.pipeThrough(new TextDecoderStream('utf-8'))
+    .pipeThrough(parseFeed(url, sax.parser(/* strict */ true, { trim: true })))
+    .pipeThrough(feedAsHTML(itemFilter))
 
-  const parseFeed = new TransformStream<string, NewsFeedItem>({
+  return (
+    feed ?? (
+      <>
+        <strong>Error:</strong>Feed content unavailable
+      </>
+    )
+  )
+}
+
+const feedAsHTML = (itemFilter: (item: NewsFeedItem) => boolean) =>
+  new TransformStream<NewsFeedItem, HTMLToken>({
+    transform: async (item, controller) => {
+      if (itemFilter(item)) {
+        const summary = item.link ? (
+          <a href={item.link}>{item.title ?? item.link}</a>
+        ) : item.title ? (
+          item.title
+        ) : undefined
+        const html = summary ? (
+          <li>
+            <details>
+              <summary>{summary}</summary>
+              <dl>
+                <dt>Feed</dt>
+                <dd>
+                  <a href={item.feedURL.href}>{item.feedURL.href}</a>
+                </dd>
+                {item.comments !== undefined ? (
+                  <>
+                    <dt>Comments</dt>
+                    <dd>
+                      <a href={item.comments}>{item.comments}</a>
+                    </dd>
+                  </>
+                ) : (
+                  <></>
+                )}
+                {item.pubDate !== undefined ? (
+                  <>
+                    <dt>Published</dt>
+                    <dd>
+                      <time>{item.pubDate}</time>
+                    </dd>
+                  </>
+                ) : (
+                  <></>
+                )}
+              </dl>
+            </details>
+          </li>
+        ) : (
+          // Don't show anything if a summary can't be generated.
+          <></>
+        )
+        for await (const token of html) {
+          controller.enqueue(token)
+        }
+      }
+    },
+  })
+
+const parseFeed = (url: URL, saxParser: sax.SAXParser) =>
+  new TransformStream<string, NewsFeedItem>({
     start: (controller) => {
       const initialOutputChunk = {
         feedURL: url,
@@ -140,64 +225,3 @@ const getNewsFeed = async (url: URL): Promise<ReadableHTMLTokenStream> => {
       saxParser.write(chunk)
     },
   })
-
-  const feedAsHTML = new TransformStream<NewsFeedItem, HTMLToken>({
-    transform: async (item, controller) => {
-      if (item.link !== undefined) {
-        const html = (
-          <li>
-            <details>
-              <summary>
-                <a href={item.link}>{item.title ?? item.link}</a>
-              </summary>
-              <dl>
-                <dt>Feed</dt>
-                <dd>
-                  <a href={item.feedURL.href}>{item.feedURL.href}</a>
-                </dd>
-                {item.comments !== undefined ? (
-                  <>
-                    <dt>Comments</dt>
-                    <dd>
-                      <a href={item.comments}>{item.comments}</a>
-                    </dd>
-                  </>
-                ) : (
-                  <></>
-                )}
-                {item.pubDate !== undefined ? (
-                  <>
-                    <dt>Published</dt>
-                    <dd>
-                      <time>{item.pubDate}</time>
-                    </dd>
-                  </>
-                ) : (
-                  // Omit items without links.
-                  <></>
-                )}
-              </dl>
-            </details>
-          </li>
-        )
-        for await (const token of html) {
-          controller.enqueue(token)
-        }
-      }
-    },
-  })
-
-  const response = await fetch(url)
-  const feed: ReadableHTMLTokenStream | undefined = response.body
-    ?.pipeThrough(new TextDecoderStream('utf-8'))
-    .pipeThrough(parseFeed)
-    .pipeThrough(feedAsHTML)
-
-  return (
-    feed ?? (
-      <>
-        <strong>Error:</strong>Feed content unavailable
-      </>
-    )
-  )
-}
