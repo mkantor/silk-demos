@@ -23,7 +23,9 @@ export default (request: Request) => {
     <html lang="en">
       <head>
         <title>Feed Me</title>
+        <link rel="stylesheet" href="./variables.css" />
         <link rel="stylesheet" href="./layout.css" />
+        <link rel="stylesheet" href="./decoration.css" />
       </head>
       <body>
         <form action="." method="get">
