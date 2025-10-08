@@ -111,19 +111,20 @@ const getNewsFeed = async (
   url: URL,
   itemFilter: (item: NewsFeedItem) => boolean,
 ): Promise<ReadableHTMLTokenStream> => {
-  const response = await fetch(url)
+  let response
+  try {
+    response = await fetch(url)
+  } catch (error) {
+    console.error(error)
+    return <></>
+  }
+
   const feed: ReadableHTMLTokenStream | undefined = response.body
     ?.pipeThrough(new TextDecoderStream('utf-8'))
     .pipeThrough(parseFeed(url, sax.parser(/* strict */ true, { trim: true })))
     .pipeThrough(feedAsHTML(itemFilter))
 
-  return (
-    feed ?? (
-      <>
-        <strong>Error:</strong>Feed content unavailable
-      </>
-    )
-  )
+  return feed ?? <></>
 }
 
 const feedAsHTML = (itemFilter: (item: NewsFeedItem) => boolean) =>
