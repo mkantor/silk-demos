@@ -26,6 +26,7 @@ export default (request: Request) => {
         <link rel="stylesheet" href="./variables.css" />
         <link rel="stylesheet" href="./layout.css" />
         <link rel="stylesheet" href="./decoration.css" />
+        <link rel="icon" href="./favicon.png" type="image/png" />
       </head>
       <body>
         <form action="." method="get">
