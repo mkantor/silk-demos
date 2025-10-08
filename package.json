@@ -13,10 +13,12 @@
   },
   "devDependencies": {
     "@types/node": "^24.6.2",
+    "@types/sax": "^1.2.7",
     "typescript": "^5.9.3"
   },
   "dependencies": {
     "@matt.kantor/silk": "latest",
-    "mime": "^4.1.0"
+    "mime": "^4.1.0",
+    "sax": "^1.4.1"
   }
 }
