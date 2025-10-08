@@ -221,7 +221,12 @@ const parseFeed = (url: URL, saxParser: sax.SAXParser) =>
       saxParser.ontext = onTextOrCData
       saxParser.oncdata = onTextOrCData
     },
-    transform: (chunk, _controller) => {
-      saxParser.write(chunk)
+    transform: (chunk, controller) => {
+      try {
+        saxParser.write(chunk)
+      } catch (error) {
+        console.error(error)
+        controller.terminate()
+      }
     },
   })
