@@ -56,7 +56,20 @@ export const server = createServer((incomingMessage, response) => {
           return staticFile
             .readableWebStream()
             .pipeTo(Writable.toWeb(response))
-            .catch(console.error)
+            .catch((staticFileError) =>
+              staticFile
+                .stat()
+                .then((stats) => stats.isFile())
+                .catch((_) => false)
+                .then((wasStaticFile) =>
+                  wasStaticFile
+                    ? console.error(
+                        `Failed to load ${path} as a static file:`,
+                        staticFileError,
+                      )
+                    : console.error(pageError),
+                ),
+            )
             .then((_) => staticFile.close())
         } catch (error) {
           response.statusCode = 404
