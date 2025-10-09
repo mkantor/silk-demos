@@ -1,9 +1,10 @@
 import { createElement, type ReadableHTMLTokenStream } from '@matt.kantor/silk'
 import type { HTMLToken } from '@matt.kantor/silk/dist/htmlToken.js'
 import sax from 'sax'
+import { page } from '../page.js'
 import { mergeStreams, readableStreamFromPromise } from '../streamUtilities.js'
 
-export default (request: Request) => {
+export default page((request) => {
   const queryParameters = new URL(request.url).searchParams
 
   const feedURLsAsArray =
@@ -57,7 +58,7 @@ export default (request: Request) => {
       </body>
     </html>
   )
-}
+})
 
 const feedURLKey = 'feed-url'
 

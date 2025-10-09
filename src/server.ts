@@ -4,6 +4,7 @@ import nodeFS from 'node:fs/promises'
 import { createServer, type IncomingMessage } from 'node:http'
 import nodePath from 'node:path'
 import { Readable, Writable } from 'node:stream'
+import { isPageModule } from './page.js'
 
 export const server = createServer((incomingMessage, response) => {
   const { request, url } = incomingMessageToWebRequest(
@@ -14,50 +15,22 @@ export const server = createServer((incomingMessage, response) => {
   const pageModulePath = `./content${url.pathname}.page.js`
   import(pageModulePath)
     .then((module: unknown) => {
-      if (
-        !(
-          // This validation is unfortunately somewhat limited. We assume the
-          // function accepts a single `Request`-typed parameter.
-          (
-            typeof module === 'object' &&
-            module !== null &&
-            'default' in module &&
-            typeof module.default === 'function'
-          )
-        )
-      ) {
-        throw new Error(
-          `${pageModulePath} does not have a default export which is a function`,
-        )
+      if (!isPageModule(module)) {
+        throw new Error(`${pageModulePath} is not a valid page module`)
       } else {
-        const page: unknown = module.default(request)
-        if (!(page instanceof ReadableStream)) {
-          throw new Error(
-            `Page was ${
-              page === null
-                ? 'null'
-                : page === undefined
-                ? 'undefined'
-                : page.constructor.name !== ''
-                ? page.constructor.name
-                : typeof page
-            }, but expected a ReadableStream`,
+        const page = module.default(request)
+        response.setHeader('content-type', 'text/html; charset=utf-8')
+        return page
+          .pipeThrough(
+            new HTMLSerializingTransformStream({
+              includeDoctype: true,
+            }),
           )
-        } else {
-          // Assume it's a `ReadableStream<HTMLToken>`.
-          response.setHeader('content-type', 'text/html; charset=utf-8')
-          return page
-            .pipeThrough(
-              new HTMLSerializingTransformStream({
-                includeDoctype: true,
-              }),
-            )
-            .pipeTo(Writable.toWeb(response))
-            .catch(console.error)
-        }
+          .pipeTo(Writable.toWeb(response))
+          .catch(console.error)
       }
     })
-    .catch(async (_pageError) => {
+    .catch(async (pageError) => {
       if (url.pathname.endsWith('.page.js')) {
         response.statusCode = 404
         response.setHeader('content-type', 'text/plain')
