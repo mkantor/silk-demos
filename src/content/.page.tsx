@@ -236,8 +236,7 @@ const parseFeed = (url: URL, saxParser: sax.SAXParser) =>
       try {
         saxParser.write(chunk)
       } catch (error) {
-        console.error(error)
-        controller.terminate()
+        controller.error(error)
       }
     },
   })
