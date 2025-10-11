@@ -1,12 +1,12 @@
 import { HTMLSerializingTransformStream } from '@matt.kantor/silk'
 import mime from 'mime/lite'
 import nodeFS from 'node:fs/promises'
-import { createServer, type IncomingMessage } from 'node:http'
+import { createServer, ServerResponse, type IncomingMessage } from 'node:http'
 import nodePath from 'node:path'
 import { Readable, Writable } from 'node:stream'
 import { isPageModule } from './page.js'
 
-export const server = createServer((incomingMessage, response) => {
+export const server = createServer((incomingMessage, serverResponse) => {
   const { request, url } = incomingMessageToWebRequest(
     incomingMessage,
     `http://${process.env['HOST'] ?? 'localhost'}`,
@@ -19,24 +19,39 @@ export const server = createServer((incomingMessage, response) => {
         throw new Error(`${pageModulePath} is not a valid page module`)
       } else {
         const page = module.default(request)
-        response.setHeader('content-type', 'text/html; charset=utf-8')
-        return page
-          .pipeThrough(
-            new HTMLSerializingTransformStream({
-              includeDoctype: true,
-            }),
-          )
-          .pipeTo(Writable.toWeb(response))
-          .catch(console.error)
+        const response = new Response(
+          page
+            .pipeThrough(
+              new HTMLSerializingTransformStream({
+                includeDoctype: true,
+              }),
+            )
+            .pipeThrough(new TextEncoderStream()),
+          {
+            status: 200,
+            headers: { 'content-type': 'text/html; charset=utf-8' },
+          },
+        )
+        return response
       }
     })
-    .catch(async (pageError) => {
+    .catch(async (pageError: unknown) => {
+      if (
+        typeof pageError !== 'object' ||
+        pageError === null ||
+        !('code' in pageError) ||
+        pageError.code !== 'ERR_MODULE_NOT_FOUND'
+      ) {
+        console.error(pageError)
+        console.warn('Falling back to a static file (if one exists)')
+      }
+
       if (url.pathname.endsWith('.page.js')) {
-        response.statusCode = 404
-        response.setHeader('content-type', 'text/plain')
-        response.write('Not found')
         console.error(`Request path '${url.pathname}' ends in '.page.js'`)
-        response.end()
+        return new Response('Not found', {
+          status: 404,
+          headers: { 'content-type': 'text/plain' },
+        })
       } else {
         // Try to serve as a static file.
         let path = `${import.meta.dirname}/content${url.pathname}`
@@ -46,40 +61,41 @@ export const server = createServer((incomingMessage, response) => {
           if (!nodePath.isAbsolute(path)) {
             path = `${import.meta.dirname}/content/${path}`
           }
-        } catch {}
-        let mimeType = mime.getType(path)
-        if (mimeType) {
-          response.setHeader('content-type', mimeType)
+        } catch {
+          // Errors here indicate the file was not a symlink, which is fine.
         }
+        const mimeType = mime.getType(path)
+
+        let staticFile
         try {
-          const staticFile = await nodeFS.open(path)
-          return staticFile
-            .readableWebStream()
-            .pipeTo(Writable.toWeb(response))
-            .catch((staticFileError) =>
-              staticFile
-                .stat()
-                .then((stats) => stats.isFile())
-                .catch((_) => false)
-                .then((wasStaticFile) =>
-                  wasStaticFile
-                    ? console.error(
-                        `Failed to load ${path} as a static file:`,
-                        staticFileError,
-                      )
-                    : console.error(pageError),
-                ),
-            )
-            .then((_) => staticFile.close())
+          staticFile = await nodeFS.open(path)
+          await staticFile.stat().then((stats) => {
+            if (stats.isFile() === false) {
+              throw new Error(`${path} is not a file`)
+            }
+          })
+          return new Response(
+            staticFile.readableWebStream({ autoClose: true }),
+            {
+              status: 200,
+              headers: mimeType ? { 'content-type': mimeType } : {},
+            },
+          )
         } catch (error) {
-          response.statusCode = 404
-          response.setHeader('content-type', 'text/plain')
-          response.write('Not found')
           console.error(error)
-          response.end()
+          if (staticFile !== undefined) {
+            staticFile.close()
+          }
+          return new Response('Not found', {
+            status: 404,
+            headers: { 'content-type': 'text/plain' },
+          })
         }
       }
     })
+    .then((response) =>
+      writeWebResponseToServerResponse(response, serverResponse),
+    )
 })
 
 /**
@@ -117,4 +133,15 @@ const incomingMessageToWebRequest = (
   })
 
   return { request, url }
+}
+
+const writeWebResponseToServerResponse = async (
+  webResponse: Response,
+  serverResponse: ServerResponse,
+) => {
+  serverResponse.statusCode = webResponse.status
+  serverResponse.statusMessage = webResponse.statusText
+  serverResponse.setHeaders(webResponse.headers)
+  await webResponse.body?.pipeTo(Writable.toWeb(serverResponse))
+  await new Promise((resolve) => serverResponse.end(resolve))
 }
