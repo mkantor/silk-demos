@@ -7,13 +7,19 @@ import { Readable, Writable } from 'node:stream'
 import { isPageModule } from './page.js'
 
 export const server = createServer((incomingMessage, serverResponse) => {
-  const { request, url } = incomingMessageToWebRequest(
+  const request = incomingMessageToWebRequest(
     incomingMessage,
     `http://${process.env['HOST'] ?? 'localhost'}`,
   )
+  handleRequest(request).then((response) =>
+    writeWebResponseToServerResponse(response, serverResponse),
+  )
+})
 
+const handleRequest = async (request: Request): Promise<Response> => {
+  const url = new URL(request.url)
   const pageModulePath = `./content${url.pathname}.page.js`
-  import(pageModulePath)
+  return import(pageModulePath)
     .then((module: unknown) => {
       if (!isPageModule(module)) {
         throw new Error(`${pageModulePath} is not a valid page module`)
@@ -93,10 +99,7 @@ export const server = createServer((incomingMessage, serverResponse) => {
         }
       }
     })
-    .then((response) =>
-      writeWebResponseToServerResponse(response, serverResponse),
-    )
-})
+}
 
 /**
  * Expects an `incomingMessage` obtained from a `Server` (it must have its
@@ -105,7 +108,7 @@ export const server = createServer((incomingMessage, serverResponse) => {
 const incomingMessageToWebRequest = (
   incomingMessage: IncomingMessage,
   baseUrl: string,
-): { readonly request: Request; readonly url: URL } => {
+): Request => {
   const url = new URL(incomingMessage.url ?? '/', baseUrl)
 
   const headers = new Headers()
@@ -132,13 +135,13 @@ const incomingMessageToWebRequest = (
     duplex: 'half',
   })
 
-  return { request, url }
+  return request
 }
 
 const writeWebResponseToServerResponse = async (
   webResponse: Response,
   serverResponse: ServerResponse,
-) => {
+): Promise<undefined> => {
   serverResponse.statusCode = webResponse.status
   serverResponse.statusMessage = webResponse.statusText
   serverResponse.setHeaders(webResponse.headers)
