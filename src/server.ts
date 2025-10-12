@@ -145,6 +145,11 @@ const writeWebResponseToServerResponse = async (
   serverResponse.statusCode = webResponse.status
   serverResponse.statusMessage = webResponse.statusText
   serverResponse.setHeaders(webResponse.headers)
-  await webResponse.body?.pipeTo(Writable.toWeb(serverResponse))
-  await new Promise((resolve) => serverResponse.end(resolve))
+  try {
+    await webResponse.body
+      ?.pipeTo(Writable.toWeb(serverResponse))
+      .catch(console.error)
+  } finally {
+    await new Promise((resolve) => serverResponse.end(resolve))
+  }
 }
