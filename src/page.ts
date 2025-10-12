@@ -18,6 +18,10 @@ export const isPageModule = (
 
 const isPage = Symbol('isPage')
 
-type PageFunction = (request: Request) => ReadableHTMLTokenStream
+type ResponseDetails = { readonly status: number }
+type PageFunction = (
+  request: Request,
+  responseDetails: ResponseDetails,
+) => ReadableHTMLTokenStream
 
 type PotentialPage = { [isPage]?: unknown } & PageFunction
