@@ -1,93 +1,164 @@
 import { HTMLSerializingTransformStream } from '@matt.kantor/silk'
 import mime from 'mime/lite'
 import nodeFS from 'node:fs/promises'
-import { createServer, ServerResponse, type IncomingMessage } from 'node:http'
+import * as nodeHTTP from 'node:http'
 import nodePath from 'node:path'
 import { Readable, Writable } from 'node:stream'
 import { isPageModule } from './page.js'
 
-const errorPageModulePath = './content/{error}.js'
-const pageFilenameSuffix = '{page}.js'
+export type ServerConfiguration = {
+  /**
+   * The path where your pages and other content live. The root of this
+   * directory corresponds to the routing root.
+   */
+  readonly publicDirectory: string
 
-export const server = createServer((incomingMessage, serverResponse) => {
-  const request = incomingMessageToWebRequest(
-    incomingMessage,
-    `http://${process.env['HOST'] ?? 'localhost'}`,
-  )
-  handleRequest(request).then((response) =>
-    writeWebResponseToServerResponse(response, serverResponse),
-  )
-})
+  /**
+   * A path relative to `contentDirectory` where an error page may be found. If
+   * a page is not found at this path, minimal `text/plain` responses will be
+   * sent upon errors.
+   *
+   * Defaults to `{error}.js`.
+   */
+  readonly errorPage?: string
+
+  /**
+   * Defaults to `'{page}.js'`.
+   */
+  readonly pageFilenameSuffix?: string
+}
+const serverConfigurationDefaults = {
+  pageFilenameSuffix: '{page}.js',
+  errorPage: '{error}.js',
+}
+
+export type Server = {
+  /**
+   * Start an HTTP server listening for TCP connections on the given `port`.
+   *
+   * The returned `Promise` resolves when the server starts listening for
+   * connections. This `Promise` may reject, e.g. if the specified `port` is
+   * already in use.
+   */
+  readonly listen: (port: number) => Promise<undefined>
+
+  /**
+   * Stops the server from accepting new connections and keeps existing
+   * connections.
+   *
+   * The returned `Promise` resolves when all existing connections have ended.
+   * This `Promise` may reject, e.g. if the server was not listening.
+   */
+  readonly close: () => Promise<undefined>
+}
+
+export const createServer = (configuration: ServerConfiguration): Server => {
+  const handleRequest = createRequestHandler(configuration)
+  const server = nodeHTTP.createServer((incomingMessage, serverResponse) => {
+    const request = incomingMessageToWebRequest(
+      incomingMessage,
+      `http://${process.env['HOST'] ?? 'localhost'}`,
+    )
+    handleRequest(request).then((response) =>
+      writeWebResponseToServerResponse(response, serverResponse),
+    )
+  })
+
+  return {
+    listen: (port) =>
+      new Promise((resolve) =>
+        server.listen({ port }, () => resolve(undefined)),
+      ),
+    close: () =>
+      new Promise((resolve, reject) =>
+        server.close((err) =>
+          err === undefined ? resolve(undefined) : reject(err),
+        ),
+      ),
+  }
+}
 
 // The server only ever responds with a subset of the possible status codes.
 type ResponseStatus = 200 | 404 | 500
 
-const handleRequest = async (request: Request): Promise<Response> => {
-  const url = new URL(request.url)
+const createRequestHandler =
+  (configuration: ServerConfiguration) =>
+  async (request: Request): Promise<Response> => {
+    const url = new URL(request.url)
 
-  // First try looking for a page to serve the request.
-  const pageModulePath = `./content${url.pathname}${pageFilenameSuffix}`
-  return handlePageRequestOrReject(pageModulePath, request, {
-    status: 200,
-  }).catch(async (pageError: unknown) => {
-    // Fall back to looking for a static file.
-
-    if (
-      // Don't log `ERR_MODULE_NOT_FOUND` errors (they're expected if the
-      // request is for a static file rather than a page).
-      typeof pageError !== 'object' ||
-      pageError === null ||
-      !('code' in pageError) ||
-      pageError.code !== 'ERR_MODULE_NOT_FOUND'
-    ) {
-      console.error(pageError)
-      console.warn('Falling back to a static file (if one exists)')
+    const { publicDirectory, pageFilenameSuffix, errorPage } = {
+      ...serverConfigurationDefaults,
+      ...configuration,
     }
 
-    // Make it impossible to get the source of a page this way (something else
-    // would have had to already gone wrong to make it here; this is defense
-    // in depth).
-    if (url.pathname.endsWith(pageFilenameSuffix)) {
-      console.error(
-        `Request path '${url.pathname}' ends in '${pageFilenameSuffix}'`,
-      )
-      return handleError(errorPageModulePath, request, { status: 404 })
-    } else {
-      // Try to serve as a static file.
-      let path = `${import.meta.dirname}/content${url.pathname}`
-      try {
-        // Resolve symlinks. Mime types are based on the resolved path.
-        path = await nodeFS.readlink(path)
-        if (!nodePath.isAbsolute(path)) {
-          path = `${import.meta.dirname}/content/${path}`
-        }
-      } catch {
-        // Errors here indicate the file was not a symlink, which is fine.
-      }
-      const mimeType = mime.getType(path)
+    const errorPageModulePath = `${publicDirectory}/${errorPage}`
 
-      let staticFile
-      try {
-        staticFile = await nodeFS.open(path)
-        await staticFile.stat().then((stats) => {
-          if (stats.isFile() === false) {
-            throw new Error(`'${path}' is not a file`)
-          }
-        })
-        return new Response(staticFile.readableWebStream({ autoClose: true }), {
-          status: 200,
-          headers: mimeType ? { 'content-type': mimeType } : {},
-        })
-      } catch (error) {
-        console.error(error)
-        if (staticFile !== undefined) {
-          staticFile.close()
-        }
+    // First try looking for a page to serve the request.
+    const pageModulePath = `${publicDirectory}/${url.pathname}${pageFilenameSuffix}`
+    return handlePageRequestOrReject(pageModulePath, request, {
+      status: 200,
+    }).catch(async (pageError: unknown) => {
+      // Fall back to looking for a static file.
+
+      if (
+        // Don't log `ERR_MODULE_NOT_FOUND` errors (they're expected if the
+        // request is for a static file rather than a page).
+        typeof pageError !== 'object' ||
+        pageError === null ||
+        !('code' in pageError) ||
+        pageError.code !== 'ERR_MODULE_NOT_FOUND'
+      ) {
+        console.error(pageError)
+        console.warn('Falling back to a static file (if one exists)')
+      }
+
+      // Make it impossible to get the source of a page this way (something else
+      // would have had to already gone wrong to make it here; this is defense
+      // in depth).
+      if (url.pathname.endsWith(pageFilenameSuffix)) {
+        console.error(
+          `Request path '${url.pathname}' ends in '${pageFilenameSuffix}'`,
+        )
         return handleError(errorPageModulePath, request, { status: 404 })
+      } else {
+        // Try to serve as a static file.
+        let path = `${publicDirectory}/${url.pathname}`
+        try {
+          // Resolve symlinks. Mime types are based on the resolved path.
+          path = await nodeFS.readlink(path)
+          if (!nodePath.isAbsolute(path)) {
+            path = `${publicDirectory}/${path}`
+          }
+        } catch {
+          // Errors here indicate the file was not a symlink, which is fine.
+        }
+        const mimeType = mime.getType(path)
+
+        let staticFile
+        try {
+          staticFile = await nodeFS.open(path)
+          await staticFile.stat().then((stats) => {
+            if (stats.isFile() === false) {
+              throw new Error(`'${path}' is not a file`)
+            }
+          })
+          return new Response(
+            staticFile.readableWebStream({ autoClose: true }),
+            {
+              status: 200,
+              headers: mimeType ? { 'content-type': mimeType } : {},
+            },
+          )
+        } catch (error) {
+          console.error(error)
+          if (staticFile !== undefined) {
+            staticFile.close()
+          }
+          return handleError(errorPageModulePath, request, { status: 404 })
+        }
       }
-    }
-  })
-}
+    })
+  }
 
 const handlePageRequestOrReject = (
   pageModulePath: string,
@@ -146,7 +217,7 @@ const handleError = (
  * `.url` set).
  */
 const incomingMessageToWebRequest = (
-  incomingMessage: IncomingMessage,
+  incomingMessage: nodeHTTP.IncomingMessage,
   baseUrl: string,
 ): Request => {
   const url = new URL(incomingMessage.url ?? '/', baseUrl)
@@ -180,7 +251,7 @@ const incomingMessageToWebRequest = (
 
 const writeWebResponseToServerResponse = async (
   webResponse: Response,
-  serverResponse: ServerResponse,
+  serverResponse: nodeHTTP.ServerResponse,
 ): Promise<undefined> => {
   serverResponse.statusCode = webResponse.status
   serverResponse.statusMessage = webResponse.statusText
