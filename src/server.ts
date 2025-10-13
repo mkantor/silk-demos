@@ -6,7 +6,8 @@ import nodePath from 'node:path'
 import { Readable, Writable } from 'node:stream'
 import { isPageModule } from './page.js'
 
-const errorPageModulePath = './content/.error.page.js'
+const errorPageModulePath = './content/{error}.js'
+const pageFilenameSuffix = '{page}.js'
 
 export const server = createServer((incomingMessage, serverResponse) => {
   const request = incomingMessageToWebRequest(
@@ -25,7 +26,7 @@ const handleRequest = async (request: Request): Promise<Response> => {
   const url = new URL(request.url)
 
   // First try looking for a page to serve the request.
-  const pageModulePath = `./content${url.pathname}.page.js`
+  const pageModulePath = `./content${url.pathname}${pageFilenameSuffix}`
   return handlePageRequestOrReject(pageModulePath, request, {
     status: 200,
   }).catch(async (pageError: unknown) => {
@@ -46,8 +47,10 @@ const handleRequest = async (request: Request): Promise<Response> => {
     // Make it impossible to get the source of a page this way (something else
     // would have had to already gone wrong to make it here; this is defense
     // in depth).
-    if (url.pathname.endsWith('.page.js')) {
-      console.error(`Request path '${url.pathname}' ends in '.page.js'`)
+    if (url.pathname.endsWith(pageFilenameSuffix)) {
+      console.error(
+        `Request path '${url.pathname}' ends in '${pageFilenameSuffix}'`,
+      )
       return handleError(errorPageModulePath, request, { status: 404 })
     } else {
       // Try to serve as a static file.
