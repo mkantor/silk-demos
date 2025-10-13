@@ -124,6 +124,9 @@ const createRequestHandler =
           `Request path '/${requestPath}' ends in '${pageFilenameSuffix}'`,
         )
         return handleError(errorPageModulePath, request, { status: 404 })
+      } else if (requestPath === errorPage) {
+        console.error(`Request path '/${requestPath}' was for error page`)
+        return handleError(errorPageModulePath, request, { status: 404 })
       } else {
         // Try to serve as a static file.
         let path = `${publicDirectory}/${requestPath}`
