@@ -84,7 +84,11 @@ type ResponseStatus = 200 | 404 | 500
 const createRequestHandler =
   (configuration: ServerConfiguration) =>
   async (request: Request): Promise<Response> => {
-    const url = new URL(request.url)
+    // Percent-decode and normalize to a relative path without a trailing `/`.
+    const requestPath = decodeURI(new URL(request.url).pathname).replace(
+      /^\/+|\/+$/g,
+      '',
+    )
 
     const { publicDirectory, pageFilenameSuffix, errorPage } = {
       ...serverConfigurationDefaults,
@@ -94,7 +98,7 @@ const createRequestHandler =
     const errorPageModulePath = `${publicDirectory}/${errorPage}`
 
     // First try looking for a page to serve the request.
-    const pageModulePath = `${publicDirectory}/${url.pathname}${pageFilenameSuffix}`
+    const pageModulePath = `${publicDirectory}/${requestPath}${pageFilenameSuffix}`
     return handlePageRequestOrReject(pageModulePath, request, {
       status: 200,
     }).catch(async (pageError: unknown) => {
@@ -115,14 +119,14 @@ const createRequestHandler =
       // Make it impossible to get the source of a page this way (something else
       // would have had to already gone wrong to make it here; this is defense
       // in depth).
-      if (url.pathname.endsWith(pageFilenameSuffix)) {
+      if (requestPath.endsWith(pageFilenameSuffix)) {
         console.error(
-          `Request path '${url.pathname}' ends in '${pageFilenameSuffix}'`,
+          `Request path '/${requestPath}' ends in '${pageFilenameSuffix}'`,
         )
         return handleError(errorPageModulePath, request, { status: 404 })
       } else {
         // Try to serve as a static file.
-        let path = `${publicDirectory}/${url.pathname}`
+        let path = `${publicDirectory}/${requestPath}`
         try {
           // Resolve symlinks. Mime types are based on the resolved path.
           path = await nodeFS.readlink(path)
