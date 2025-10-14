@@ -2,9 +2,16 @@ import type { ReadableHTMLTokenStream } from '@matt.kantor/silk'
 import type { ResponseStatus } from './server.js'
 
 export type Page = { readonly [isPage]: true } & PageFunction
-export const page = (handler: PotentialPage): Page => {
-  handler[isPage] = true
-  return handler as Page
+export const page = (handler: PageFunction): Page => {
+  if (isPage in handler && handler[isPage] !== true) {
+    // This ought to be impossible (`isPage` is not exported).
+    throw new Error(
+      'Page handler already has an `isPage` symbol property whose value is not `true`. This is a bug!',
+    )
+  }
+  const handlerAsPageLike: { [isPage]?: true } & PageFunction = handler
+  handlerAsPageLike[isPage] = true
+  return handlerAsPageLike as Page
 }
 
 export const isPageModule = (
