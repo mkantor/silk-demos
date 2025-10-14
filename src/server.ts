@@ -52,6 +52,9 @@ export type Server = {
   readonly close: () => Promise<undefined>
 }
 
+// The server only ever responds with a subset of the possible status codes.
+export type ResponseStatus = 200 | 404 | 500
+
 export const createServer = (configuration: ServerConfiguration): Server => {
   const handleRequest = createRequestHandler(configuration)
   const server = nodeHTTP.createServer((incomingMessage, serverResponse) => {
@@ -77,9 +80,6 @@ export const createServer = (configuration: ServerConfiguration): Server => {
       ),
   }
 }
-
-// The server only ever responds with a subset of the possible status codes.
-type ResponseStatus = 200 | 404 | 500
 
 const createRequestHandler =
   (configuration: ServerConfiguration) =>

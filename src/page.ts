@@ -1,4 +1,5 @@
 import type { ReadableHTMLTokenStream } from '@matt.kantor/silk'
+import type { ResponseStatus } from './server.js'
 
 export type Page = { readonly [isPage]: true } & PageFunction
 export const page = (handler: PotentialPage): Page => {
@@ -18,10 +19,8 @@ export const isPageModule = (
 
 const isPage = Symbol('isPage')
 
-type ResponseDetails = { readonly status: number }
+type ResponseDetails = { readonly status: ResponseStatus }
 type PageFunction = (
   request: Request,
   responseDetails: ResponseDetails,
 ) => ReadableHTMLTokenStream
-
-type PotentialPage = { [isPage]?: unknown } & PageFunction
