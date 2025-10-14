@@ -17,6 +17,7 @@
     "typescript": "^5.9.3"
   },
   "dependencies": {
+    "@matt.kantor/loom-node": "^0.0.1",
     "@matt.kantor/silk": "latest",
     "mime": "^4.1.0",
     "sax": "^1.4.1"

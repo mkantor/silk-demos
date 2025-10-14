@@ -1,4 +1,4 @@
-import { createServer } from './server.js'
+import { createServer } from '@matt.kantor/loom-node'
 
 const port = 80
 

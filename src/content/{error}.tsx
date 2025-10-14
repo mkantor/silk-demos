@@ -1,6 +1,5 @@
+import { page, type ResponseStatus } from '@matt.kantor/loom-node'
 import { createElement } from '@matt.kantor/silk'
-import { page } from '../page.js'
-import type { ResponseStatus } from '../server.js'
 
 export default page((request, { status }) => {
   return (
