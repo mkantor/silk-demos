@@ -1,0 +1,118 @@
+:root {
+  --background-color: #012;
+  --text-color: #def;
+  --interactive-color: #8ef;
+  --accent-color: #0de;
+  --gap: clamp(1rem, 5vmin, 2rem);
+  --gap-small: calc(var(--gap) / 2);
+  --line-thickness: 1px;
+  --min-font-size: 0.9em;
+  --h1-font-size: 3rem;
+  --h2-font-size: 1.5rem;
+  --h3-font-size: 1.25rem;
+  --h4-font-size: 1rem;
+  --h5-font-size: 1rem;
+  --h6-font-size: 1rem;
+
+  box-sizing: border-box;
+  font-size: max(var(--min-font-size), calc(1.5vmin + 0.1vmax));
+}
+
+*,
+*:before,
+*:after {
+  box-sizing: inherit;
+}
+
+* {
+  margin: 0;
+}
+
+body {
+  margin: 10vh 10vw;
+}
+
+body {
+  line-height: 1.5;
+  background-color: var(--background-color);
+  color: var(--text-color);
+  font-family: system-ui;
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap);
+
+  a {
+    color: var(--interactive-color);
+    text-decoration-thickness: var(--line-thickness);
+    &:hover {
+      text-decoration-style: dotted;
+    }
+    &.current {
+      text-decoration-style: dotted;
+    }
+  }
+
+  h1 {
+    font-size: var(--h1-font-size);
+  }
+  h2 {
+    font-size: var(--h2-font-size);
+  }
+  h3 {
+    font-size: var(--h3-font-size);
+  }
+  h4 {
+    font-size: var(--h4-font-size);
+  }
+  h5 {
+    font-size: var(--h5-font-size);
+  }
+  h6 {
+    font-size: var(--h6-font-size);
+  }
+
+  > header {
+    nav ul {
+      list-style: none;
+      padding: 0;
+      display: flex;
+      flex-direction: row;
+      gap: var(--gap-small);
+      font-size: var(--h2-font-size);
+    }
+    @media (max-width: 80ch) {
+      nav ul {
+        flex-direction: column;
+        gap: 0;
+      }
+    }
+  }
+
+  > main {
+    max-width: 80ch;
+    p {
+      text-wrap: pretty;
+    }
+    article {
+      display: flex;
+      flex-direction: column;
+      gap: var(--gap-small);
+    }
+    article > header {
+      time {
+        font-size: smaller;
+      }
+    }
+  }
+
+  article nav {
+    display: flex;
+    justify-content: space-between;
+  }
+
+  > footer {
+    text-decoration-line: overline;
+    text-decoration-style: dotted;
+    text-decoration-thickness: var(--line-thickness);
+  }
+}
