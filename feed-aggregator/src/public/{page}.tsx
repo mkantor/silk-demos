@@ -4,14 +4,14 @@ import type { HTMLToken } from '@matt.kantor/silk/dist/htmlToken.js'
 import sax from 'sax'
 import { mergeStreams, readableStreamFromPromise } from '../streamUtilities.js'
 
-export default page((request) => {
+export default page(request => {
   const queryParameters = new URL(request.url).searchParams
 
   const feedURLsAsArray =
     queryParameters
       .get(feedURLKey)
       ?.split('\n')
-      ?.flatMap((urlAsString) => {
+      ?.flatMap(urlAsString => {
         try {
           return [new URL(urlAsString)]
         } catch (error) {
@@ -36,14 +36,14 @@ export default page((request) => {
           <label>
             RSS Feed URLs (newline-delimited):
             <textarea name={feedURLKey}>
-              {feedURLsAsArray.flatMap((url) => [url.href, '\n'])}
+              {feedURLsAsArray.flatMap(url => [url.href, '\n'])}
             </textarea>
           </label>
           <input type="submit" value="Refresh Feeds" />
         </form>
         <div>
           <ul>
-            {getNewsFeeds(new Set(feedURLsAsArray), (item) => {
+            {getNewsFeeds(new Set(feedURLsAsArray), item => {
               if (!item.link) {
                 return false
               } else {
@@ -90,7 +90,7 @@ const defaultFeedURLs = [
   'https://www.nature.com/nature.rss',
   'https://www.newscientist.com/feed/home',
   'https://www.theguardian.com/world/rss',
-].map((urlAsString) => new URL(urlAsString))
+].map(urlAsString => new URL(urlAsString))
 
 const getNewsFeeds = async (
   urls: ReadonlySet<URL>,
@@ -191,7 +191,7 @@ const feedAsHTML = (itemFilter: (item: NewsFeedItem) => boolean) =>
 
 const parseFeed = (url: URL, saxParser: sax.SAXParser) =>
   new TransformStream<string, NewsFeedItem>({
-    start: (controller) => {
+    start: controller => {
       const initialOutputChunk = {
         feedURL: url,
         title: undefined,
@@ -204,7 +204,7 @@ const parseFeed = (url: URL, saxParser: sax.SAXParser) =>
       let currentLocation: TagWithExtractableData | 'item' | 'irrelevant' =
         'irrelevant'
 
-      saxParser.onopentagstart = (tag) => {
+      saxParser.onopentagstart = tag => {
         if (
           tag.name === 'item' ||
           (currentLocation === 'item' && isTagWithExtractableData(tag.name))
@@ -212,7 +212,7 @@ const parseFeed = (url: URL, saxParser: sax.SAXParser) =>
           currentLocation = tag.name
         }
       }
-      saxParser.onclosetag = (tag) => {
+      saxParser.onclosetag = tag => {
         if (tag === 'item') {
           controller.enqueue(outputChunk)
           outputChunk = { ...initialOutputChunk }

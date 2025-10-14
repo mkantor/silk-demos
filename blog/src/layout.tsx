@@ -24,7 +24,7 @@ export const layout = (
                 { href: '/', text: 'Most Recent Post' },
                 { href: '/archive', text: 'Archive' },
                 { href: '/about', text: 'About Me' },
-              ].map((page) => (
+              ].map(page => (
                 <li>{link(page)}</li>
               ))}
             </ul>
@@ -43,9 +43,8 @@ export const layout = (
 
 const navigationLink =
   (currentHref: string) =>
-  (props: { readonly href: string; readonly text: string }) =>
-    (
-      <a href={props.href} class={props.href === currentHref ? 'current' : ''}>
-        {props.text}
-      </a>
-    )
+  (props: { readonly href: string; readonly text: string }) => (
+    <a href={props.href} class={props.href === currentHref ? 'current' : ''}>
+      {props.text}
+    </a>
+  )

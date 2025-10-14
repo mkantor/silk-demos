@@ -11,6 +11,6 @@ export const posts = await Promise.all([
 ])
 
 export const postsByID: Record<string, (typeof posts)[number]> =
-  Object.fromEntries(posts.map((module) => [module.id, module]))
+  Object.fromEntries(posts.map(module => [module.id, module]))
 
 export type Post = (typeof posts)[number]

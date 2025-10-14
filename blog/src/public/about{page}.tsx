@@ -2,7 +2,7 @@ import { page } from '@matt.kantor/loom-node'
 import { createElement } from '@matt.kantor/silk'
 import { layout } from '../layout.js'
 
-export default page((request) =>
+export default page(request =>
   layout(
     { title: 'About', request },
     <article>

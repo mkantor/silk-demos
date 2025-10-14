@@ -9,22 +9,22 @@ export const mergeStreams = <T>(
   streams: ReadonlySet<ReadableStream<T>>,
 ): ReadableStream<T> => {
   const streamsAsArray = [...streams]
-  const readers = streamsAsArray.map((stream) => stream.getReader())
+  const readers = streamsAsArray.map(stream => stream.getReader())
   const readOperations: (undefined | Promise<void>)[] = streamsAsArray.map(
-    (_) => undefined,
+    _ => undefined,
   )
   const dones: (() => unknown)[] = []
   const allDone = Promise.all(
     streamsAsArray.map(
-      (_) => new Promise((resolve) => dones.push(() => resolve(undefined))),
+      _ => new Promise(resolve => dones.push(() => resolve(undefined))),
     ),
   )
 
   return new ReadableStream({
-    start: (controller) => {
+    start: controller => {
       allDone.then(() => controller.close())
     },
-    pull: (controller) =>
+    pull: controller =>
       Promise.race(
         readers.map((reader, index) => {
           const readOperation = reader.read().then(({ value, done }) => {
@@ -39,7 +39,7 @@ export const mergeStreams = <T>(
           return readOperation
         }),
       ),
-    cancel: (reason) => {
+    cancel: reason => {
       for (const reader of readers) {
         reader.cancel(reason)
       }
@@ -51,7 +51,7 @@ export const readableStreamFromPromise = <R>(
   promise: Promise<(R & Primitive) | HasDefaultReader<R>>,
 ): ReadableStream<R> =>
   new ReadableStream({
-    start: async (controller) => {
+    start: async controller => {
       try {
         const possiblyReadable = await promise
         if (

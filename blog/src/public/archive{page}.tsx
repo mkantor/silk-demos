@@ -4,11 +4,11 @@ import { layout } from '../layout.js'
 import { postLink } from '../post-components.js'
 import { posts } from '../posts.js'
 
-export default page((request) =>
+export default page(request =>
   layout(
     { title: 'Archive', request },
     <ul>
-      {posts.map((post) => (
+      {posts.map(post => (
         <li>
           {postLink(post)} —
           <time datetime={post.date.toISOString()}>

@@ -4,7 +4,7 @@ import { postWithMetadata } from '../post-components.js'
 import { postsByID } from '../posts.js'
 import errorPage from './{error}.js'
 
-export default page((request) => {
+export default page(request => {
   const queryParameters = new URL(request.url).searchParams
   const postId = queryParameters.get('id')
   const post = postId ? postsByID[postId] : undefined
