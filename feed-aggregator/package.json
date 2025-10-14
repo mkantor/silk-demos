@@ -1,5 +1,5 @@
 {
-  "name": "@matt.kantor/silk-demo-server-node",
+  "name": "",
   "version": "0.0.0",
   "main": "dist/index.js",
   "type": "module",
@@ -17,7 +17,7 @@
     "typescript": "^5.9.3"
   },
   "dependencies": {
-    "@matt.kantor/loom-node": "^0.0.1",
+    "@matt.kantor/loom-node": "latest",
     "@matt.kantor/silk": "latest",
     "mime": "^4.1.0",
     "sax": "^1.4.1"
