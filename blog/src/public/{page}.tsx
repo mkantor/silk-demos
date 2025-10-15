@@ -2,8 +2,15 @@ import { page } from '@matt.kantor/loom-node'
 import { layout } from '../layout.js'
 import { postWithMetadata } from '../post-components.js'
 import { posts } from '../posts.js'
+import errorPage from './{error}.js'
 
-// Show the most recent post.
+const newestPost = posts[0]
+
 export default page(request =>
-  layout({ title: posts[0].title, request }, postWithMetadata(posts[0])),
+  newestPost === undefined
+    ? errorPage(request, { status: 404 })
+    : layout(
+        { title: newestPost.title, request },
+        postWithMetadata(newestPost),
+      ),
 )

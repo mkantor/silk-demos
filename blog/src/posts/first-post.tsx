@@ -1,10 +1,8 @@
 import { createElement } from '@matt.kantor/silk'
-import { getSlugOrThrow } from '../slug.js'
+import { post } from '../post.js'
 
-export const id = getSlugOrThrow(import.meta.url)
-
-export const title = 'First Post'
-
-export const date = new Date('2025-09-22T16:35:17Z')
-
-export const content = () => <p>Hello, world!</p>
+export default post(import.meta, {
+  title: 'First Post',
+  date: new Date('2025-09-22T16:35:17Z'),
+  content: () => <p>Hello, world!</p>,
+})

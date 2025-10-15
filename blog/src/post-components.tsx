@@ -1,5 +1,5 @@
 import { createElement } from '@matt.kantor/silk'
-import type { Post } from './posts.js'
+import type { Post } from './post.js'
 import { posts } from './posts.js'
 
 export const postLink = (post: Post, title?: string) => (
