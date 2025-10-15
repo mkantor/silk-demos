@@ -1,4 +1,4 @@
-import { page } from '@matt.kantor/loom-node'
+import { page } from '@superhighway/loom'
 import { layout } from '../layout.js'
 import { postWithMetadata } from '../post-components.js'
 import { postsByID } from '../posts.js'

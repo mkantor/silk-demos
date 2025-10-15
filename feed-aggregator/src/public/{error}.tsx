@@ -1,5 +1,5 @@
-import { page, type ResponseStatus } from '@matt.kantor/loom-node'
-import { createElement } from '@matt.kantor/silk'
+import { page, type ResponseStatus } from '@superhighway/loom'
+import { createElement } from '@superhighway/silk'
 
 export default page((request, { status }) => {
   return (

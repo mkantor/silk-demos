@@ -14,7 +14,7 @@
     "typescript": "^5.9.3"
   },
   "dependencies": {
-    "@matt.kantor/loom-node": "latest",
-    "@matt.kantor/silk": "latest"
+    "@superhighway/loom": "latest",
+    "@superhighway/silk": "latest"
   }
 }

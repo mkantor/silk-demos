@@ -1,4 +1,4 @@
-import { createElement } from '@matt.kantor/silk'
+import { createElement } from '@superhighway/silk'
 import type { Post } from './post.js'
 import { posts } from './posts.js'
 

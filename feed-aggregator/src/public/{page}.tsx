@@ -1,6 +1,9 @@
-import { page } from '@matt.kantor/loom-node'
-import { createElement, type ReadableHTMLTokenStream } from '@matt.kantor/silk'
-import type { HTMLToken } from '@matt.kantor/silk/dist/htmlToken.js'
+import { page } from '@superhighway/loom'
+import {
+  createElement,
+  type HTMLToken,
+  type ReadableHTMLTokenStream,
+} from '@superhighway/silk'
 import sax from 'sax'
 import { mergeStreams, readableStreamFromPromise } from '../streamUtilities.js'
 

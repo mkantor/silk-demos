@@ -1,5 +1,5 @@
-import { page } from '@matt.kantor/loom-node'
-import { createElement } from '@matt.kantor/silk'
+import { page } from '@superhighway/loom'
+import { createElement } from '@superhighway/silk'
 
 export default page(request => (
   <html lang="en">

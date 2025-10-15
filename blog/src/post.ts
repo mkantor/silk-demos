@@ -1,4 +1,4 @@
-import type { ReadableHTMLTokenStream } from '@matt.kantor/silk'
+import type { ReadableHTMLTokenStream } from '@superhighway/silk'
 import { getSlugOrThrow } from './slug.js'
 
 export type Post = PostSpecification & {

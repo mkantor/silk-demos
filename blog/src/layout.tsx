@@ -1,4 +1,4 @@
-import { createElement } from '@matt.kantor/silk'
+import { createElement } from '@superhighway/silk'
 
 export const layout = (
   props: {

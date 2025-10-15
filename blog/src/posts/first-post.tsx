@@ -1,4 +1,4 @@
-import { createElement } from '@matt.kantor/silk'
+import { createElement } from '@superhighway/silk'
 import { post } from '../post.js'
 
 export default post(import.meta, {
