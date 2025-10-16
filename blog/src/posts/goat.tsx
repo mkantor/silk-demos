@@ -10,7 +10,7 @@ export default post(import.meta, {
     const randomGoat = goats[Math.floor(Math.random() * goats.length)]
     return (
       <figure>
-        <img src={randomGoat ?? goats[0]} />
+        <img fetchpriority="high" src={randomGoat ?? goats[0]} />
         <figcaption>Check out this goat.</figcaption>
       </figure>
     )
