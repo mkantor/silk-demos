@@ -24,8 +24,8 @@ export const layout = (
                 { href: '/', text: 'Most Recent Post' },
                 { href: '/archive', text: 'Archive' },
                 { href: '/about', text: 'About Me' },
-              ].map(page => (
-                <li>{link(page)}</li>
+              ].map(destination => (
+                <li>{link(destination)}</li>
               ))}
             </ul>
           </nav>
