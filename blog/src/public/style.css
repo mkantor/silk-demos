@@ -108,6 +108,13 @@ body {
   article nav {
     display: flex;
     justify-content: space-between;
+    gap: var(--gap);
+    > * {
+      max-width: 50%;
+    }
+    > :last-child {
+      text-align: right;
+    }
   }
 
   > footer {

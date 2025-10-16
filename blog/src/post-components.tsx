@@ -30,16 +30,18 @@ export const postWithMetadata = (post: Post) => {
       <nav>
         {postNavigationItem(nextPost, {
           text: `Next Post (${nextPost?.title})`,
-          before: '← ',
+          before: `←${nbsp}`,
         })}
         {postNavigationItem(previousPost, {
           text: `Previous Post (${previousPost?.title})`,
-          after: ' →',
+          after: `${nbsp}→`,
         })}
       </nav>
     </article>
   )
 }
+
+const nbsp = '\xa0'
 
 const postNavigationItem = (
   post: Post | undefined,
