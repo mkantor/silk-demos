@@ -13,8 +13,8 @@ export const postWithMetadata = (post: Post) => {
       postIndex = Number(index)
     }
   }
-  const previousPost = posts[postIndex - 1]
-  const nextPost = posts[postIndex + 1]
+  const nextPost = posts[postIndex - 1]
+  const previousPost = posts[postIndex + 1]
 
   return (
     <article>
@@ -24,23 +24,37 @@ export const postWithMetadata = (post: Post) => {
           {post.date.toDateString()}
         </time>
       </header>
+
       {post.content()}
+
       <nav>
-        {previousPost ? (
-          <small>
-            ← {postLink(previousPost, `Next Post (${previousPost.title})`)}
-          </small>
-        ) : (
-          <></>
-        )}
-        {nextPost ? (
-          <small>
-            {postLink(nextPost, `Previous Post (${nextPost.title})`)} →
-          </small>
-        ) : (
-          <></>
-        )}
+        {postNavigationItem(nextPost, {
+          text: `Next Post (${nextPost?.title})`,
+          before: '← ',
+        })}
+        {postNavigationItem(previousPost, {
+          text: `Previous Post (${previousPost?.title})`,
+          after: ' →',
+        })}
       </nav>
     </article>
   )
 }
+
+const postNavigationItem = (
+  post: Post | undefined,
+  props: {
+    readonly text: string
+    readonly before?: string
+    readonly after?: string
+  },
+) =>
+  post ? (
+    <small>
+      {props.before ?? ''}
+      {postLink(post, props.text)}
+      {props.after ?? ''}
+    </small>
+  ) : (
+    <></>
+  )
