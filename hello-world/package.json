@@ -4,10 +4,11 @@
   "main": "dist/index.js",
   "type": "module",
   "scripts": {
-    "build": "tsc --build",
+    "build": "npm run compile; npm run copy-non-typescript-files",
     "clean": "rm -rf dist* *.tsbuildinfo",
+    "compile": "tsc --build",
     "copy-non-typescript-files": "./copy-non-typescript-files",
-    "start": "npm run clean && npm run build && npm run copy-non-typescript-files && node ."
+    "start": "npm run clean && npm run build; node ."
   },
   "devDependencies": {
     "@types/node": "^24.6.2",
