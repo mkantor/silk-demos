@@ -43,8 +43,9 @@ export const layout = (
 
 const navigationLink =
   (currentHref: string) =>
-  (props: { readonly href: string; readonly text: string }) => (
-    <a href={props.href} class={props.href === currentHref ? 'current' : ''}>
-      {props.text}
-    </a>
-  )
+  (props: { readonly href: string; readonly text: string }) =>
+    (
+      <a href={props.href} class={props.href === currentHref ? 'current' : ''}>
+        {props.text}
+      </a>
+    )
