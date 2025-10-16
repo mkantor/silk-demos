@@ -29,6 +29,7 @@ export default page(request => {
     <html lang="en">
       <head>
         <title>Feed Me</title>
+        <meta name="viewport" content="width=device-width" />
         <link rel="stylesheet" href="./variables.css" />
         <link rel="stylesheet" href="./layout.css" />
         <link rel="stylesheet" href="./decoration.css" />

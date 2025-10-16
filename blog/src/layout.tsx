@@ -13,6 +13,7 @@ export const layout = (
     <html lang="en">
       <head>
         <title>{props.title}</title>
+        <meta name="viewport" content="width=device-width" />
         <link rel="stylesheet" href="style.css" />
       </head>
       <body>

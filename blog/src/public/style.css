@@ -88,6 +88,10 @@ body {
     }
   }
 
+  img {
+    max-width: 100%;
+  }
+
   > main {
     max-width: 80ch;
     p {
