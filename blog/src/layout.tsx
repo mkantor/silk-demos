@@ -33,7 +33,7 @@ export const layout = (
         </header>
         <main>{children}</main>
         <footer>
-          <small>© {new Date().getUTCFullYear().toFixed(0)} Person McPersonface</small>
+          <small>© {thisYear.toFixed(0)} Person McPersonface</small>
         </footer>
       </body>
     </html>
@@ -46,3 +46,5 @@ const navigationLink =
       {props.text}
     </a>
   )
+
+const thisYear = new Date().getUTCFullYear()
