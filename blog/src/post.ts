@@ -5,14 +5,13 @@ export type Post = PostSpecification & {
   readonly [isPost]: true
   readonly id: string
 }
-export const post = (
-  meta: { readonly url: string },
-  specification: PostSpecification,
-): Post => ({ ...specification, id: getSlugOrThrow(meta.url), [isPost]: true })
+export const post = (meta: { readonly url: string }, specification: PostSpecification): Post => ({
+  ...specification,
+  id: getSlugOrThrow(meta.url),
+  [isPost]: true,
+})
 
-export const isPostModule = (
-  module: unknown,
-): module is { readonly default: Post } =>
+export const isPostModule = (module: unknown): module is { readonly default: Post } =>
   typeof module === 'object' &&
   module !== null &&
   'default' in module &&

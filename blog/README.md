@@ -2,11 +2,10 @@
 
 A minimalist blog.
 
-To publish a new blog post, just create a `.tsx` file in `src/posts/`. See
-existing posts for examples.
+To publish a new blog post, just create a `.tsx` file in `src/posts/`. See existing posts for
+examples.
 
-You can browse a hosted instance of this blog at
-<https://silk-demo-blog.mattkantor.com/>.
+You can browse a hosted instance of this blog at <https://silk-demo-blog.mattkantor.com/>.
 
 To run this demo locally:
 

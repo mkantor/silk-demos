@@ -33,9 +33,7 @@ export const layout = (
         </header>
         <main>{children}</main>
         <footer>
-          <small>
-            © {new Date().getUTCFullYear().toFixed(0)} Person McPersonface
-          </small>
+          <small>© {new Date().getUTCFullYear().toFixed(0)} Person McPersonface</small>
         </footer>
       </body>
     </html>
@@ -43,10 +41,8 @@ export const layout = (
 }
 
 const navigationLink =
-  (currentHref: string) =>
-  (props: { readonly href: string; readonly text: string }) =>
-    (
-      <a href={props.href} class={props.href === currentHref ? 'current' : ''}>
-        {props.text}
-      </a>
-    )
+  (currentHref: string) => (props: { readonly href: string; readonly text: string }) => (
+    <a href={props.href} class={props.href === currentHref ? 'current' : ''}>
+      {props.text}
+    </a>
+  )

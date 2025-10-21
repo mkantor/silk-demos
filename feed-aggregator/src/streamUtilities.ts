@@ -5,19 +5,13 @@
  *
  * Adapted from <https://stackoverflow.com/a/73314492/3625>.
  */
-export const mergeStreams = <T>(
-  streams: ReadonlySet<ReadableStream<T>>,
-): ReadableStream<T> => {
+export const mergeStreams = <T>(streams: ReadonlySet<ReadableStream<T>>): ReadableStream<T> => {
   const streamsAsArray = [...streams]
   const readers = streamsAsArray.map(stream => stream.getReader())
-  const readOperations: (undefined | Promise<void>)[] = streamsAsArray.map(
-    _ => undefined,
-  )
+  const readOperations: (undefined | Promise<void>)[] = streamsAsArray.map(_ => undefined)
   const dones: (() => unknown)[] = []
   const allDone = Promise.all(
-    streamsAsArray.map(
-      _ => new Promise(resolve => dones.push(() => resolve(undefined))),
-    ),
+    streamsAsArray.map(_ => new Promise(resolve => dones.push(() => resolve(undefined)))),
   )
 
   return new ReadableStream({

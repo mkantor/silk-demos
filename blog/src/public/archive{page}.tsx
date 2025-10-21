@@ -11,9 +11,7 @@ export default page(request =>
       {posts.map(post => (
         <li>
           {postLink(post)} —
-          <time datetime={post.date.toISOString()}>
-            {post.date.toDateString()}
-          </time>
+          <time datetime={post.date.toISOString()}>{post.date.toDateString()}</time>
         </li>
       ))}
     </ul>,

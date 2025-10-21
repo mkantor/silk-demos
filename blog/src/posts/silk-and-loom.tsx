@@ -7,15 +7,13 @@ export default post(import.meta, {
   content: () => (
     <>
       <p>
-        <a href="https://github.com/mkantor/silk-demos/tree/main/blog">
-          This blog
-        </a>{' '}
-        is built using <a href="https://github.com/mkantor/loom">Loom</a> and{' '}
+        <a href="https://github.com/mkantor/silk-demos/tree/main/blog">This blog</a> is built using{' '}
+        <a href="https://github.com/mkantor/loom">Loom</a> and{' '}
         <a href="https://github.com/mkantor/silk">Silk</a>.
       </p>
       <p>
-        Loom is a web server for Node.js with filesystem-based routing, and Silk
-        is an embedded DSL for authoring streaming HTML from TypeScript via JSX.
+        Loom is a web server for Node.js with filesystem-based routing, and Silk is an embedded DSL
+        for authoring streaming HTML from TypeScript via JSX.
       </p>
       <p>
         The source for this post can be seen{' '}

@@ -9,8 +9,5 @@ const newestPost = posts[0]
 export default page(request =>
   newestPost === undefined
     ? errorPage(request, { status: 404 })
-    : layout(
-        { title: newestPost.title, request },
-        postWithMetadata(newestPost),
-      ),
+    : layout({ title: newestPost.title, request }, postWithMetadata(newestPost)),
 )

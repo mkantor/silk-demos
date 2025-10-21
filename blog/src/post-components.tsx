@@ -20,9 +20,7 @@ export const postWithMetadata = (post: Post) => {
     <article>
       <header>
         <h2>{post.title}</h2>
-        <time datetime={post.date.toISOString()}>
-          {post.date.toDateString()}
-        </time>
+        <time datetime={post.date.toISOString()}>{post.date.toDateString()}</time>
       </header>
 
       {post.content()}

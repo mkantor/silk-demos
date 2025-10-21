@@ -22,9 +22,7 @@ export default page((request, { status }) => {
 const getErrorMessage = (status: ResponseStatus): string => {
   switch (status) {
     case 200:
-      throw new Error(
-        'The error handler was called with a successful status code',
-      )
+      throw new Error('The error handler was called with a successful status code')
     case 404:
       return 'Not Found'
     case 500:

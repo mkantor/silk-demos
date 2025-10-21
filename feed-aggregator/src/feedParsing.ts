@@ -20,8 +20,7 @@ export const parseFeed = (url: URL, saxParser: sax.SAXParser) =>
       } as const
       let outputChunk: NewsFeedItem = { ...initialOutputChunk }
 
-      let currentLocation: TagWithExtractableData | 'item' | 'irrelevant' =
-        'irrelevant'
+      let currentLocation: TagWithExtractableData | 'item' | 'irrelevant' = 'irrelevant'
 
       saxParser.onopentagstart = tag => {
         if (

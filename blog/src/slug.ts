@@ -10,10 +10,7 @@ const basenameSansExtension = (path: string): string | undefined =>
     .pop()
     ?.replace(/\.[^\.]*$/, '')
 
-const assertTruthy: (value: unknown, message: string) => asserts value = (
-  value,
-  message,
-) => {
+const assertTruthy: (value: unknown, message: string) => asserts value = (value, message) => {
   if (!value) {
     throw new Error(message)
   }

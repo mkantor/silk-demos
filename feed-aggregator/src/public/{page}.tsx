@@ -1,9 +1,5 @@
 import { page } from '@superhighway/loom'
-import {
-  createElement,
-  type HTMLToken,
-  type ReadableHTMLTokenStream,
-} from '@superhighway/silk'
+import { createElement, type HTMLToken, type ReadableHTMLTokenStream } from '@superhighway/silk'
 import sax from 'sax'
 import { parseFeed, type NewsFeedItem } from '../feedParsing.js'
 import { mergeStreams, readableStreamFromPromise } from '../streamUtilities.js'
@@ -155,9 +151,7 @@ const fetchFeedAsHTML = async (props: {
 
   const feed: ReadableHTMLTokenStream | undefined = response.body
     ?.pipeThrough(new TextDecoderStream('utf-8'))
-    .pipeThrough(
-      parseFeed(props.url, sax.parser(/* strict */ true, { trim: true })),
-    )
+    .pipeThrough(parseFeed(props.url, sax.parser(/* strict */ true, { trim: true })))
     .pipeThrough(transformFeedItemsToHTML(props.itemFilter))
 
   return feed ?? <></>
@@ -206,9 +200,7 @@ const feedItem = (item: NewsFeedItem) => {
   )
 }
 
-const transformFeedItemsToHTML = (
-  itemFilter: (item: NewsFeedItem) => boolean,
-) =>
+const transformFeedItemsToHTML = (itemFilter: (item: NewsFeedItem) => boolean) =>
   new TransformStream<NewsFeedItem, HTMLToken>({
     transform: async (item, controller) => {
       if (itemFilter(item)) {
