@@ -1,6 +1,8 @@
 # [Silk][silk] Demo: Feed Aggregator
 
-An [RSS][rss] feed aggregator.
+An [RSS][rss] feed aggregator. It looks like this:
+
+![A screenshot of the demo](./media/screenshot.png)
 
 To run this demo locally:
 
