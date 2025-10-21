@@ -91,7 +91,6 @@ const feedURLKey = 'feed-url'
 
 const defaultFeedURLs = [
   'https://feeds.arstechnica.com/arstechnica/features',
-  'https://feeds.arstechnica.com/arstechnica/gadgets',
   'https://feeds.arstechnica.com/arstechnica/gaming',
   'https://feeds.arstechnica.com/arstechnica/science',
   'https://feeds.arstechnica.com/arstechnica/technology-lab',
