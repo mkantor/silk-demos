@@ -8,6 +8,26 @@ import sax from 'sax'
 import { parseFeed, type NewsFeedItem } from '../feedParsing.js'
 import { mergeStreams, readableStreamFromPromise } from '../streamUtilities.js'
 
+/**
+ * This page consists of a `<form>` to manage a list of feed URLs, followed by
+ * the aggregated news feed itself, which is a `<ul>` of links with additional
+ * metadata in `<details>` elements.
+ *
+ * Everything is as non-blocking as possible:
+ *  - HTTP requests to fetch feeds are initiated concurrently.
+ *  - The response body of each feed is run through a streaming SAX parser.
+ *  - Feed items are transformed to HTML and flushed as soon as possible
+ *    (whenever an `</item>` closing tag is encountered in the source XML).
+ *  - The `ReadableHTMLTokenStream` returned from `aggregatedFeedFromURLs` is a
+ *    merge of each individual input feed's stream. As soon as a rendered item
+ *    becomes available from any input feed it is flushed to the merged output.
+ *
+ * The result is a stream which emits an `<li>` element for each feed item as
+ * soon as the bytes specifying that specific item are received and processed.
+ * Because requests are processed concurrently, the order of feed items on the
+ * page depends on the speed/latency of each feed's web server, with items from
+ * faster-responding servers ending up near the top of the list.
+ */
 export default page(request => {
   const queryParameters = new URL(request.url).searchParams
 
@@ -99,6 +119,10 @@ const defaultFeedURLs = [
   'https://www.theguardian.com/world/rss',
 ].map(urlAsString => new URL(urlAsString))
 
+/**
+ * Concurrently fetch and transform feeds from a `Set` of `URL`s. The return
+ * value is an unordered merge of the results.
+ */
 const aggregatedFeedFromURLs = async (props: {
   readonly urls: ReadonlySet<URL>
   readonly itemFilter: (item: NewsFeedItem) => boolean
@@ -114,6 +138,10 @@ const aggregatedFeedFromURLs = async (props: {
   return mergeStreams(feedsAsHTML)
 }
 
+/**
+ * Fetch an individual feed and transform its items to HTML (except those for
+ * which `itemFilter` returns `false`).
+ */
 const fetchFeedAsHTML = async (props: {
   readonly url: URL
   readonly itemFilter: (item: NewsFeedItem) => boolean
