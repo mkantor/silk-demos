@@ -10,7 +10,7 @@ You can browse a hosted instance of this blog at <https://silk-demo-blog.mattkan
 To run this demo locally:
 
 ```sh
-https://github.com/mkantor/silk-demos.git
+git clone https://github.com/mkantor/silk-demos.git
 cd silk-demos/blog
 npm ci
 PORT=9999 npm run start

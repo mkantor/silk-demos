@@ -5,7 +5,7 @@ A simple one-page website.
 To run this demo locally:
 
 ```sh
-https://github.com/mkantor/silk-demos.git
+git clone https://github.com/mkantor/silk-demos.git
 cd silk-demos/feed-aggregator
 npm ci
 PORT=9999 npm run start
