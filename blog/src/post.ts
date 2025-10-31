@@ -1,4 +1,4 @@
-import type { ReadableHTMLTokenStream } from '@superhighway/silk'
+import type { ReadableHTMLStream } from '@superhighway/silk'
 import { getSlugOrThrow } from './slug.js'
 
 export type Post = PostSpecification & {
@@ -25,5 +25,5 @@ const isPost = Symbol('isPost')
 type PostSpecification = {
   readonly title: string
   readonly date: Date
-  readonly content: () => ReadableHTMLTokenStream
+  readonly content: () => ReadableHTMLStream
 }
