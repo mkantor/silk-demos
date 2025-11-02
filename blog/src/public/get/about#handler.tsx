@@ -1,6 +1,6 @@
 import { page } from '@superhighway/loom'
 import { createElement } from '@superhighway/silk'
-import { layout } from '../layout.js'
+import { layout } from '../../layout.js'
 
 export default page(request =>
   layout(

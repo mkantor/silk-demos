@@ -1,8 +1,8 @@
 import { page } from '@superhighway/loom'
-import { createElement, type HTMLToken, type ReadableHTMLTokenStream } from '@superhighway/silk'
+import { createElement, type HTMLToken, type ReadableHTMLStream } from '@superhighway/silk'
 import sax from 'sax'
-import { parseFeed, type NewsFeedItem } from '../feedParsing.js'
-import { mergeStreams, readableStreamFromPromise } from '../streamUtilities.js'
+import { parseFeed, type NewsFeedItem } from '../../feedParsing.js'
+import { mergeStreams, readableStreamFromPromise } from '../../streamUtilities.js'
 
 /**
  * This page consists of a `<form>` to manage a list of feed URLs, followed by
@@ -14,7 +14,7 @@ import { mergeStreams, readableStreamFromPromise } from '../streamUtilities.js'
  *  - The response body of each feed is run through a streaming SAX parser.
  *  - Feed items are transformed to HTML and flushed as soon as possible
  *    (whenever an `</item>` closing tag is encountered in the source XML).
- *  - The `ReadableHTMLTokenStream` returned from `aggregatedFeedFromURLs` is a
+ *  - The `ReadableHTMLStream` returned from `aggregatedFeedFromURLs` is a
  *    merge of each individual input feed's stream. As soon as a rendered item
  *    becomes available from any input feed it is flushed to the merged output.
  *
@@ -121,8 +121,8 @@ const defaultFeedURLs = [
 const aggregatedFeedFromURLs = async (props: {
   readonly urls: ReadonlySet<URL>
   readonly itemFilter: (item: NewsFeedItem) => boolean
-}): Promise<ReadableHTMLTokenStream> => {
-  const feedsAsHTML = new Set<ReadableHTMLTokenStream>()
+}): Promise<ReadableHTMLStream> => {
+  const feedsAsHTML = new Set<ReadableHTMLStream>()
   for (const url of props.urls.values()) {
     const feedAsHTML = fetchFeedAsHTML({
       url,
@@ -140,7 +140,7 @@ const aggregatedFeedFromURLs = async (props: {
 const fetchFeedAsHTML = async (props: {
   readonly url: URL
   readonly itemFilter: (item: NewsFeedItem) => boolean
-}): Promise<ReadableHTMLTokenStream> => {
+}): Promise<ReadableHTMLStream> => {
   let response
   try {
     response = await fetch(props.url)
@@ -149,7 +149,7 @@ const fetchFeedAsHTML = async (props: {
     return <></>
   }
 
-  const feed: ReadableHTMLTokenStream | undefined = response.body
+  const feed: ReadableHTMLStream | undefined = response.body
     ?.pipeThrough(new TextDecoderStream('utf-8'))
     .pipeThrough(parseFeed(props.url, sax.parser(/* strict */ true, { trim: true })))
     .pipeThrough(transformFeedItemsToHTML(props.itemFilter))
