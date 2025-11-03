@@ -1,27 +1,21 @@
-import { page, requestHandler, type ResponseStatus } from '@superhighway/loom'
+import { page, type ResponseStatus } from '@superhighway/loom'
 import { createElement } from '@superhighway/silk'
 
-export default requestHandler((request, responseDetails) => {
-  const errorMessage = getErrorMessage(responseDetails.status)
-
-  const errorPage = page(_ => (
-    <html lang="en">
-      <head>
-        <title>Feed Me</title>
-        <link rel="stylesheet" href="./variables.css" />
-        <link rel="stylesheet" href="./layout.css" />
-        <link rel="stylesheet" href="./decoration.css" />
-        <link rel="icon" href="./favicon.png" type="image/png" />
-      </head>
-      <body>
-        <h1>Error</h1>
-        {errorMessage}
-      </body>
-    </html>
-  ))
-
-  return errorPage(request, responseDetails)
-})
+export default page((request, responseDetails) => (
+  <html lang="en">
+    <head>
+      <title>Feed Me</title>
+      <link rel="stylesheet" href="./variables.css" />
+      <link rel="stylesheet" href="./layout.css" />
+      <link rel="stylesheet" href="./decoration.css" />
+      <link rel="icon" href="./favicon.png" type="image/png" />
+    </head>
+    <body>
+      <h1>Error</h1>
+      {getErrorMessage(responseDetails.status)}
+    </body>
+  </html>
+))
 
 const getErrorMessage = (status: ResponseStatus): string => {
   switch (status) {
