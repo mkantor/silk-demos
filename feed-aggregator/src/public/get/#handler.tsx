@@ -1,5 +1,5 @@
 import { page } from '@superhighway/loom'
-import { createElement, type HTMLToken, type ReadableHTMLStream } from '@superhighway/silk'
+import { createElement, type HTMLToken } from '@superhighway/silk'
 import sax from 'sax'
 import { parseFeed, type NewsFeedItem } from '../../feedParsing.js'
 import { mergeStreams, readableStreamFromPromise } from '../../streamUtilities.js'
@@ -121,8 +121,8 @@ const defaultFeedURLs = [
 const aggregatedFeedFromURLs = async (props: {
   readonly urls: ReadonlySet<URL>
   readonly itemFilter: (item: NewsFeedItem) => boolean
-}): Promise<ReadableHTMLStream> => {
-  const feedsAsHTML = new Set<ReadableHTMLStream>()
+}): Promise<ReadableStream<HTMLToken>> => {
+  const feedsAsHTML = new Set<ReadableStream<HTMLToken>>()
   for (const url of props.urls.values()) {
     const feedAsHTML = fetchFeedAsHTML({
       url,
@@ -140,7 +140,7 @@ const aggregatedFeedFromURLs = async (props: {
 const fetchFeedAsHTML = async (props: {
   readonly url: URL
   readonly itemFilter: (item: NewsFeedItem) => boolean
-}): Promise<ReadableHTMLStream> => {
+}): Promise<ReadableStream<HTMLToken>> => {
   let response
   try {
     response = await fetch(props.url)
@@ -149,7 +149,7 @@ const fetchFeedAsHTML = async (props: {
     return <></>
   }
 
-  const feed: ReadableHTMLStream | undefined = response.body
+  const feed: ReadableStream<HTMLToken> | undefined = response.body
     ?.pipeThrough(new TextDecoderStream('utf-8'))
     .pipeThrough(parseFeed(props.url, sax.parser(/* strict */ true, { trim: true })))
     .pipeThrough(transformFeedItemsToHTML(props.itemFilter))
