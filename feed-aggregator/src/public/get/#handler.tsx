@@ -86,18 +86,12 @@ export default page(request => {
 const feedURLKey = 'feed-url'
 
 const defaultFeedURLs = [
-  'https://feeds.arstechnica.com/arstechnica/features',
-  'https://feeds.arstechnica.com/arstechnica/gaming',
-  'https://feeds.arstechnica.com/arstechnica/science',
-  'https://feeds.arstechnica.com/arstechnica/technology-lab',
+  'https://devblogs.microsoft.com/typescript/feed/',
   'https://feeds.bbci.co.uk/news/business/rss.xml',
   'https://feeds.bbci.co.uk/news/health/rss.xml',
   'https://feeds.bbci.co.uk/news/world/rss.xml',
-  'https://feeds.bloomberg.com/markets/news.rss',
   'https://feeds.npr.org/1001/rss.xml', // news
   'https://feeds.npr.org/1006/rss.xml', // business
-  'https://feeds.npr.org/1007/rss.xml', // science
-  'https://feeds.npr.org/1019/rss.xml', // technology
   'https://feeds.npr.org/1026/rss.xml', // space
   'https://feeds.washingtonpost.com/rss/world',
   'https://globalnews.ca/world/feed/',
@@ -111,7 +105,9 @@ const defaultFeedURLs = [
   'https://www.nasa.gov/rss/dyn/breaking_news.rss',
   'https://www.nature.com/nature.rss',
   'https://www.newscientist.com/feed/home',
+  'https://www.phoronix.com/rss.php',
   'https://www.theguardian.com/world/rss',
+  'https://www.theregister.com/headlines.rss',
 ].map(urlAsString => new URL(urlAsString))
 
 /**
