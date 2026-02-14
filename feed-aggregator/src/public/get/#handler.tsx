@@ -147,7 +147,7 @@ const fetchFeedAsHTML = async (props: {
 
   const feed: ReadableStream<HTMLToken> | undefined = response.body
     ?.pipeThrough(new TextDecoderStream('utf-8'))
-    .pipeThrough(parseFeed(props.url, sax.parser(/* strict */ true, { trim: true })))
+    .pipeThrough(parseFeed(props.url, sax.parser(/* strict */ false, { trim: true })))
     .pipeThrough(transformFeedItemsToHTML(props.itemFilter))
 
   return feed ?? <></>

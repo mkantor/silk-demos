@@ -23,19 +23,21 @@ export const parseFeed = (url: URL, saxParser: sax.SAXParser) =>
       let currentLocation: TagWithExtractableData | 'item' | 'irrelevant' = 'irrelevant'
 
       saxParser.onopentagstart = tag => {
+        const lowercaseTagName = tag.name.toLowerCase()
         if (
-          tag.name === 'item' ||
-          (currentLocation === 'item' && isTagWithExtractableData(tag.name))
+          lowercaseTagName === 'item' ||
+          (currentLocation === 'item' && isTagWithExtractableData(lowercaseTagName))
         ) {
-          currentLocation = tag.name
+          currentLocation = lowercaseTagName
         }
       }
       saxParser.onclosetag = tag => {
-        if (tag === 'item') {
+        const lowercaseTagName = tag.toLowerCase()
+        if (lowercaseTagName === 'item') {
           controller.enqueue(outputChunk)
           outputChunk = { ...initialOutputChunk }
           currentLocation = 'irrelevant'
-        } else if (isTagWithExtractableData(tag)) {
+        } else if (isTagWithExtractableData(lowercaseTagName)) {
           // All extractable data is within `<item>`s.
           currentLocation = 'item'
         }
